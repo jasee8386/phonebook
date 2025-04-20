@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phonebook App</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+    input, button { padding: 8px; margin: 5px 0; width: 100%; }
+    ul { list-style-type: none; padding: 0; }
+    li { background: #f4f4f4; padding: 10px; margin: 5px 0; border-radius: 5px; }
+    button.small { padding: 5px 10px; margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Phonebook</h2>
+
+  <form id="contact-form">
+    <input type="text" id="name" placeholder="Name" required />
+    <input type="text" id="phone" placeholder="Phone Number" required />
+    <input type="hidden" id="contactId" />
+    <button type="submit">Save Contact</button>
+  </form>
+ 
+  <input type="text" id="search" placeholder="Search contacts..." />
+  <button id="viewBtn"> View Contacts</button>
+  <ul id="contact-list" style="display: none;"></ul>
+  
+
+  <script src="script.js"></script>
+</body>
+</html>
