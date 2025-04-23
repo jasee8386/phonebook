@@ -1,11 +1,14 @@
 const apiUrl = "http://localhost:3000/contacts";
+//const apiUrl = "https://jsonplaceholder.typicode.com/users";
 let contacts = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchContacts();
 
   // Handle form submission
-  document.getElementById("contact-form").addEventListener("submit", handleFormSubmit);
+  document
+    .getElementById("contact-form")
+    .addEventListener("submit", handleFormSubmit);
 
   // Handle search input
   document.getElementById("search").addEventListener("input", handleSearch);
@@ -62,7 +65,7 @@ async function handleFormSubmit(e) {
     }
 
     e.target.reset(); // Clear form
-    fetchContacts();  // Refresh list
+    fetchContacts(); // Refresh list
   } catch (error) {
     console.error("Error saving contact:", error);
   }
@@ -100,15 +103,15 @@ function handleSearch(e) {
 
 // Edit contact (pre-fill form)
 function editContact(id) {
-    const contact = contacts.find((c) => c.id == id); // Use == for type flexibility
-  
-    if (contact) {
-      document.getElementById("name").value = contact.name;
-      document.getElementById("phone").value = contact.phone;
-      document.getElementById("contactId").value = contact.id;
-    }
+  const contact = contacts.find((c) => c.id == id); // Use == for type flexibility
+
+  if (contact) {
+    document.getElementById("name").value = contact.name;
+    document.getElementById("phone").value = contact.phone;
+    document.getElementById("contactId").value = contact.id;
   }
-  
+}
+
 // Delete contact
 async function deleteContact(id) {
   if (confirm("Are you sure you want to delete this contact?")) {
