@@ -1,127 +1,98 @@
-const apiUrl = "http://localhost:3000/contacts";
-//const apiUrl = "https://jsonplaceholder.typicode.com/users";
 let contacts = [];
 
+// Load initial data from API or localStorage
 document.addEventListener("DOMContentLoaded", () => {
-  fetchContacts();
-
-  // Handle form submission
-  document
-    .getElementById("contact-form")
-    .addEventListener("submit", handleFormSubmit);
-
-  // Handle search input
-  document.getElementById("search").addEventListener("input", handleSearch);
-
-  // Toggle contact list visibility
-  document.getElementById("viewBtn").addEventListener("click", () => {
-    const list = document.getElementById("contact-list");
-    if (list.style.display === "none") {
-      list.style.display = "block";
-      fetchContacts();
-      document.getElementById("viewBtn").textContent = "Hide Contacts";
-    } else {
-      list.style.display = "none";
-      document.getElementById("viewBtn").textContent = "View Contacts";
-    }
-  });
+  const localData = localStorage.getItem("contacts");
+  if (localData) {
+    contacts = JSON.parse(localData);
+    displayContacts();
+  } else {
+    fetch('https://jsonplaceholder.typicode.com/users') // Sample API
+      .then(res => res.json())
+      .then(data => {
+        contacts = data.map(user => ({
+          name: user.name,
+          number: user.phone
+        }));
+        localStorage.setItem("contacts", JSON.stringify(contacts));
+        displayContacts();
+      });
+  }
 });
 
-// Fetch contacts from API
-async function fetchContacts() {
-  try {
-    const res = await fetch(apiUrl);
-    contacts = await res.json();
-    displayContacts(contacts);
-  } catch (error) {
-    console.error("Failed to fetch contacts:", error);
-  }
-}
-
-// Handle form submit (add or update)
-async function handleFormSubmit(e) {
+// Add contact
+document.getElementById("contactForm").addEventListener("submit", e => {
   e.preventDefault();
   const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
-  const contactId = document.getElementById("contactId").value;
+  const number = document.getElementById("number").value;
 
-  const contact = { name, phone };
+  contacts.push({ name, number });
+  localStorage.setItem("contacts", JSON.stringify(contacts));
+  displayContacts();
 
-  try {
-    if (contactId) {
-      // Update contact
-      await fetch(`${apiUrl}/${contactId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(contact),
-      });
-    } else {
-      // Add new contact
-      await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(contact),
-      });
-    }
+  e.target.reset();
+});
 
-    e.target.reset(); // Clear form
-    fetchContacts(); // Refresh list
-  } catch (error) {
-    console.error("Error saving contact:", error);
+// Search function
+document.getElementById("searchBtn").addEventListener("click", () => {
+  const searchQuery = document.getElementById("search").value.toLowerCase();
+  const filteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(searchQuery) ||
+    contact.number.includes(searchQuery)
+  );
+  displayContacts(filteredContacts);
+  document.getElementById("contactContainer").style.display = "block"; // show on search too
+});
+
+// View all contacts
+const viewBtn = document.getElementById("viewBtn");
+const contactContainer = document.getElementById("contactContainer");
+
+viewBtn.addEventListener("click", () => {
+  if (contactContainer.style.display === "none") {
+    displayContacts();
+    contactContainer.style.display = "block";
+    viewBtn.textContent = "Hide";
+  } else {
+    contactContainer.style.display = "none";
+    viewBtn.textContent = "View";
   }
-}
+});
 
-// Display contact list in the UI
-function displayContacts(contactList) {
-  const list = document.getElementById("contact-list");
+function displayContacts(filteredContacts = contacts) {
+  const list = document.getElementById("contactList");
   list.innerHTML = "";
 
-  contactList.forEach((contact) => {
+  filteredContacts.forEach((contact, index) => {
     const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between align-items-center";
     li.innerHTML = `
+      <span>${contact.name} - ${contact.number}</span>
       <div>
-        <strong>${contact.name}</strong><br/>
-        <span>${contact.phone}</span>
-      </div>
-      <div>
-        <button class="small edit" onclick="editContact('${contact.id}')">Edit</button>
-        <button class="small delete" onclick="deleteContact('${contact.id}')">Delete</button>
+        <button class="btn btn-sm btn-info me-2" onclick="editContact(${index})">Edit</button>
+        <button class="btn btn-sm btn-secondary" onclick="deleteContact(${index})">Delete</button>
       </div>
     `;
     list.appendChild(li);
   });
 }
 
-// Search contacts
-function handleSearch(e) {
-  const term = e.target.value.toLowerCase();
-  const filtered = contacts.filter(
-    (c) => c.name.toLowerCase().includes(term) || c.phone.includes(term)
-  );
-  displayContacts(filtered);
-}
+function editContact(index) {
+  const newName = prompt("Edit Name:", contacts[index].name);
+  const newNumber = prompt("Edit Number:", contacts[index].number);
 
-// Edit contact (pre-fill form)
-function editContact(id) {
-  const contact = contacts.find((c) => c.id == id); // Use == for type flexibility
-
-  if (contact) {
-    document.getElementById("name").value = contact.name;
-    document.getElementById("phone").value = contact.phone;
-    document.getElementById("contactId").value = contact.id;
+  if (newName && newNumber) {
+    contacts[index].name = newName;
+    contacts[index].number = newNumber;
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+    displayContacts();
   }
 }
 
-// Delete contact
-async function deleteContact(id) {
-  if (confirm("Are you sure you want to delete this contact?")) {
-    try {
-      await fetch(`${apiUrl}/${id}`, {
-        method: "DELETE",
-      });
-      fetchContacts();
-    } catch (error) {
-      console.error("Error deleting contact:", error);
-    }
+function deleteContact(index) {
+  if (confirm("Delete this contact?")) {
+    contacts.splice(index, 1);
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+    displayContacts();
   }
 }
